@@ -24,10 +24,11 @@ class ArrayType extends AbstractType
         $dumper = $this->dumper;
         $theme = $dumper->getTheme();
 
-        $output = [$theme->output(
+        $head = $theme->output(
             type: 'array',
             complement: sprintf('%d', count($var))
-        )];
+        );
+        $output = [];
 
         foreach ($var as $key => $value) {
             $dumper->increaseIndent();
@@ -43,6 +44,6 @@ class ArrayType extends AbstractType
             $dumper->decreaseIndent();
         }
 
-        return implode("\n", $output);
+        return $theme->nest($head, $output);
     }
 }

@@ -31,7 +31,7 @@ class ThrowableType extends AbstractType
         $output = [];
 
         $reflection = new ReflectionObject($var);
-        $output[] = sprintf(
+        $head = sprintf(
             "%s #%s '%s' in '%s:%s'",
             $theme->output(type: 'exception', complement: $theme->escape($reflection->getName())),
             $theme->output(type: 'trace', value: (string) $var->getcode()),
@@ -64,6 +64,6 @@ class ThrowableType extends AbstractType
 
         $dumper->decreaseIndent();
 
-        return implode(PHP_EOL, $output);
+        return $theme->nest($head, $output);
     }
 }

@@ -6,12 +6,25 @@ namespace G\Dump\Theme;
 
 class ThemeHTML implements ThemeInterface
 {
-    private const string FOOTER = '</pre>';
+    private const string TOGGLE_CLASS = 'gdump-toggle';
+    private const string TOGGLE_OPEN = ' &#9662;';
+    private const string TOGGLE_CLOSED = ' &#9656; &hellip;';
+
+    /**
+     * Closes the dump and installs, once per page, the click handler that folds
+     * and unfolds the nested elements. Without JavaScript everything stays visible.
+     */
+    private const string FOOTER = '</pre>'
+        . '<script>window.gdumpToggle||(window.gdumpToggle=!0,document.addEventListener("click",function(e){'
+        . 'var t=e.target;if(!t.classList||!t.classList.contains("gdump-toggle"))return;'
+        . 'var c=t.nextElementSibling;if(!c)return;var h=c.style.display==="none";'
+        . 'c.style.display=h?"":"none";t.textContent=h?" \u25BE":" \u25B8 \u2026"}));</script>';
     private const string TYPE_STRING = 'string';
 
     private const DEFAULT_STYLE = [
         'pre' => 'padding:0.25rem; overflow:auto',
         'indent' => 'color:lightgrey; font-weight:lighter',
+        'toggle' => 'cursor:pointer; user-select:none; color:slateblue',
         'type' => 'color:royalblue',
         'complement' => 'color:forestgreen; font-style:italic',
         'value' => 'color:inherit',
@@ -132,6 +145,23 @@ class ThemeHTML implements ThemeInterface
     public function footer(): string
     {
         return self::FOOTER;
+    }
+
+    public function nest(string $head, array $children, bool $collapsed = false): string
+    {
+        if ($children === []) {
+            return $head;
+        }
+
+        return sprintf(
+            '%s<span class="%s" style="%s">%s</span><span%s>%s</span>',
+            $head,
+            self::TOGGLE_CLASS,
+            self::DEFAULT_STYLE['toggle'],
+            $collapsed ? self::TOGGLE_CLOSED : self::TOGGLE_OPEN,
+            $collapsed ? ' style="display:none"' : '',
+            "\n" . implode("\n", $children)
+        );
     }
 
     public function indent(int $depth): string

@@ -6,6 +6,7 @@ namespace G\Dump\Type;
 
 class StringType extends AbstractType
 {
+    private const string CUT_MARK = '[...]';
     private const int PRIORITY = 10;
 
     public function getPriority(): int
@@ -25,11 +26,14 @@ class StringType extends AbstractType
     {
         $length = mb_strlen($var);
         $bytes = strlen($var);
+        $max = $this->dumper->getMaxStringLength();
+        $shown = $this->dumper->getTheme()->escape($max > 0 && $length > $max ? mb_substr($var, 0, $max) : $var);
 
         return $this->dumper->getTheme()->output(
             type: gettype($var),
             complement: $length . ($length !== $bytes ? " - size=$bytes" : ''),
-            value: "'" . $this->dumper->getTheme()->escape($var) . "'"
+            // The length shown in the complement is always the real one
+            value: "'" . $shown . ($max > 0 && $length > $max ? self::CUT_MARK : '') . "'"
         );
     }
 
