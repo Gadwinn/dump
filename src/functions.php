@@ -34,7 +34,7 @@ if (!function_exists('gdumpOptions')) {
         /** @var int $stringLength */
         static $stringLength = 0;
         /** @var bool $methods */
-        static $methods = false;
+        static $methods = true;
         /** @var Dumper|null $dumper */
         static $dumper = null;
 
