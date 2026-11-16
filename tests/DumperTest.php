@@ -277,14 +277,21 @@ final class DumperTest extends TestCase
         $this->assertStringNotContainsString('*RECURSION*', $dump);
     }
 
-    public function testMethodsAreHiddenByDefault(): void
+    public function testMethodsAreListedByDefault(): void
     {
-        $this->assertStringNotContainsString('METHODS', $this->text(new WithMembers()));
+        $this->assertStringContainsString('METHODS', $this->text(new WithMembers()));
+    }
+
+    public function testMethodsCanBeHidden(): void
+    {
+        $dumper = (new Dumper(new ThemeText(), showMethods: false))->setTraceIndex(Dumper::TRACE_DISABLED);
+
+        $this->assertStringNotContainsString('METHODS', $dumper->dump(new WithMembers()));
     }
 
     public function testMethodsAreListedWithTheirSignatures(): void
     {
-        $dumper = (new Dumper(new ThemeText(), showMethods: true))->setTraceIndex(Dumper::TRACE_DISABLED);
+        $dumper = (new Dumper(new ThemeText()))->setTraceIndex(Dumper::TRACE_DISABLED);
 
         $dump = $dumper->dump(new WithMembers());
 
@@ -319,7 +326,7 @@ final class DumperTest extends TestCase
 
     public function testHtmlThemeStartsWithTheMethodsFolded(): void
     {
-        $dumper = (new Dumper(new ThemeHTML(), showMethods: true))->setTraceIndex(Dumper::TRACE_DISABLED);
+        $dumper = (new Dumper(new ThemeHTML()))->setTraceIndex(Dumper::TRACE_DISABLED);
 
         $dump = $dumper->dump(new WithMembers());
 

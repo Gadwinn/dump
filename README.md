@@ -48,7 +48,7 @@ A helper is only defined when no function of that name exists yet, so you can de
 
 - **Scalars** with their type; strings with their length in characters, and in bytes when it differs (`string(3 - size=5) 'été'`).
 - **Arrays** and **objects**, nested, with the constants of the class and the visibility of each property (`public`, `protected`, `private`, `static`). Uninitialized typed properties are skipped.
-- **Methods** of the objects with their full signatures, on request (`showMethods`).
+- **Methods** of the objects with their full signatures, shown by default and folded in the HTML theme (`showMethods: false` hides them).
 - **Exceptions** with code, message, file, line, trace and previous exception.
 - **Resources**, open or closed.
 - **JSON strings** (`json`), **JSON with escaped quotes** (`json slashed`) and **`serialize()` output** (`serialized`) are decoded and shown as structures.
@@ -76,7 +76,7 @@ gdumpOptions(
     themeHtml: new MyTheme(),
     maxDepth: 5,            // nesting limit (default 10)
     maxStringLength: 500,   // longer strings are cut and end with [...] (default 0 = no limit)
-    showMethods: true,      // list the methods of the objects (default false)
+    showMethods: false,     // list the methods of the objects (default true)
 );
 ```
 

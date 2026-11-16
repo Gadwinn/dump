@@ -52,7 +52,7 @@ class Dumper implements DumperInterface
         array $types = [],
         private readonly int $maxDepth = self::DEFAULT_MAX_DEPTH,
         private readonly int $maxStringLength = 0,
-        private readonly bool $showMethods = false,
+        private readonly bool $showMethods = true,
     ) {
         $this->types = $types;
 
