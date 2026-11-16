@@ -294,7 +294,7 @@ final class DumperTest extends TestCase
             $dump
         );
         $this->assertStringContainsString(
-            '|  |- final protected static function make(array &$options = []): ' . WithMembers::class,
+            '|  |- final protected static function make(array &$options = []): int',
             $dump
         );
         $this->assertStringContainsString(
