@@ -15,11 +15,15 @@ if (!function_exists('gdumpOptions')) {
      * @param ThemeInterface|null $themeHtml Theme used in a web context
      * @param ThemeInterface|null $themeCli  Theme used on the command line
      * @param int|null            $maxDepth  Nesting level after which arrays and objects are not expanded
+     * @param int|null            $maxStringLength Characters after which a string is cut (0 = no limit)
+     * @param bool|null           $showMethods     List the methods of the objects
      */
     function gdumpOptions(
         ?ThemeInterface $themeHtml = null,
         ?ThemeInterface $themeCli = null,
-        ?int $maxDepth = null
+        ?int $maxDepth = null,
+        ?int $maxStringLength = null,
+        ?bool $showMethods = null
     ): Dumper {
         /** @var ThemeInterface|null $html */
         static $html = null;
@@ -27,14 +31,28 @@ if (!function_exists('gdumpOptions')) {
         static $cli = null;
         /** @var int $depth */
         static $depth = Dumper::DEFAULT_MAX_DEPTH;
+        /** @var int $stringLength */
+        static $stringLength = 0;
+        /** @var bool $methods */
+        static $methods = false;
         /** @var Dumper|null $dumper */
         static $dumper = null;
 
-        if ($dumper === null || $themeHtml !== null || $themeCli !== null || $maxDepth !== null) {
+        $changed = $themeHtml !== null || $themeCli !== null || $maxDepth !== null
+            || $maxStringLength !== null || $showMethods !== null;
+
+        if ($dumper === null || $changed) {
             $html = $themeHtml ?? $html ?? new ThemeHTML();
             $cli = $themeCli ?? $cli ?? new ThemeText();
             $depth = $maxDepth ?? $depth;
-            $dumper = new Dumper(theme: PHP_SAPI === 'cli' ? $cli : $html, maxDepth: $depth);
+            $stringLength = $maxStringLength ?? $stringLength;
+            $methods = $showMethods ?? $methods;
+            $dumper = new Dumper(
+                theme: PHP_SAPI === 'cli' ? $cli : $html,
+                maxDepth: $depth,
+                maxStringLength: $stringLength,
+                showMethods: $methods,
+            );
         }
 
         return $dumper;

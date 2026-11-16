@@ -37,6 +37,20 @@ interface DumperInterface
     public function decreaseIndent(): void;
 
     /**
+     * Maximum number of characters shown for a string (0 = no limit)
+     *
+     * @return int
+     */
+    public function getMaxStringLength(): int;
+
+    /**
+     * Whether the methods of the objects are listed
+     *
+     * @return bool
+     */
+    public function showsMethods(): bool;
+
+    /**
      * Dump variables
      *
      * @param mixed ...$vars

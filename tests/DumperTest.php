@@ -204,7 +204,7 @@ final class DumperTest extends TestCase
 
         $dump = $this->html(['<b>key</b>' => $object, 'e' => new \RuntimeException('<img src=x>')]);
 
-        $this->assertStringNotContainsString('<script>', $dump);
+        $this->assertStringNotContainsString('<script>alert', $dump);
         $this->assertStringNotContainsString('<b>key</b>', $dump);
         $this->assertStringNotContainsString('<i>prop</i>', $dump);
         $this->assertStringNotContainsString('<img', $dump);
@@ -217,7 +217,7 @@ final class DumperTest extends TestCase
         $dump = trim($this->html('x'));
 
         $this->assertStringStartsWith('<pre', $dump);
-        $this->assertStringEndsWith('</pre>', $dump);
+        $this->assertStringContainsString('</pre>', $dump);
     }
 
     public function testCustomTypeListReplacesTheDefaultOnes(): void
@@ -237,5 +237,94 @@ final class DumperTest extends TestCase
         $second = $dumper->dump(['a' => ['b' => 1]]);
 
         $this->assertSame($first, $second);
+    }
+
+    // -------------------------------------------------------------------------
+    // Long strings, constants and methods, folding
+    // -------------------------------------------------------------------------
+
+    public function testLongStringIsCutButKeepsItsRealLength(): void
+    {
+        $dumper = (new Dumper(new ThemeText(), maxStringLength: 5))->setTraceIndex(Dumper::TRACE_DISABLED);
+
+        $this->assertSame("string(10) 'abcde[...]'", trim($dumper->dump('abcdefghij')));
+        $this->assertSame("string(5) 'abcde'", trim($dumper->dump('abcde')));
+        $this->assertSame("string(6 - size=12) 'ééééé[...]'", trim($dumper->dump('éééééé')));
+    }
+
+    public function testStringsAreNotCutByDefault(): void
+    {
+        $long = str_repeat('x', 50_000);
+
+        $this->assertStringContainsString($long, $this->text($long));
+    }
+
+    public function testObjectConstantsAreListed(): void
+    {
+        $dump = $this->text(new WithMembers());
+
+        $this->assertStringContainsString("|- public const LABEL = string(5) 'label'", $dump);
+        $this->assertStringContainsString('|- private const LIMIT = int 3', $dump);
+    }
+
+    public function testEnumCasesAreNamedWithoutBeingExpandedAgain(): void
+    {
+        $dump = $this->text(Suit::Hearts);
+
+        $this->assertStringContainsString('|- public case Hearts = object(' . Suit::class . ')', $dump);
+        $this->assertStringContainsString('|- public case Spades = object(' . Suit::class . ')', $dump);
+        $this->assertStringContainsString("\$value = string(1) 'H'", $dump);
+        $this->assertStringNotContainsString('*RECURSION*', $dump);
+    }
+
+    public function testMethodsAreHiddenByDefault(): void
+    {
+        $this->assertStringNotContainsString('METHODS', $this->text(new WithMembers()));
+    }
+
+    public function testMethodsAreListedWithTheirSignatures(): void
+    {
+        $dumper = (new Dumper(new ThemeText(), showMethods: true))->setTraceIndex(Dumper::TRACE_DISABLED);
+
+        $dump = $dumper->dump(new WithMembers());
+
+        $this->assertStringContainsString('|- METHODS', $dump);
+        $this->assertStringContainsString(
+            "|  |- public function rename(string \$name, ?int \$times = null, string ...\$more): static",
+            $dump
+        );
+        $this->assertStringContainsString(
+            '|  |- final protected static function make(array &$options = []): ' . WithMembers::class,
+            $dump
+        );
+        $this->assertStringContainsString(
+            "|  |- private function secret(bool \$flag = true, string \$mode = 'fast'): void",
+            $dump
+        );
+    }
+
+    public function testHtmlThemeAddsAFoldingToggleToNestedElements(): void
+    {
+        $dump = $this->html(['a' => [1], 'b' => 2]);
+
+        $this->assertSame(2, substr_count($dump, 'class="gdump-toggle"'), 'One toggle per non-empty array');
+        $this->assertSame(1, substr_count($dump, '<script>'));
+        $this->assertStringNotContainsString('display:none', $dump, 'Arrays start unfolded');
+    }
+
+    public function testHtmlThemeHasNoToggleForEmptyOrScalarValues(): void
+    {
+        $this->assertStringNotContainsString('class="gdump-toggle"', $this->html([], 'text', new \stdClass()));
+    }
+
+    public function testHtmlThemeStartsWithTheMethodsFolded(): void
+    {
+        $dumper = (new Dumper(new ThemeHTML(), showMethods: true))->setTraceIndex(Dumper::TRACE_DISABLED);
+
+        $dump = $dumper->dump(new WithMembers());
+
+        $this->assertSame(1, substr_count($dump, 'display:none'));
+        $this->assertStringContainsString('METHODS', $dump);
+        $this->assertStringContainsString('rename', $dump);
     }
 }

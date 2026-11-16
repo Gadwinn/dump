@@ -41,6 +41,8 @@ class Dumper implements DumperInterface
      *
      * If not provided, all types from the Type directory will be registered.
      * @param int $maxDepth Nesting level after which arrays and objects are not expanded any more.
+     * @param int $maxStringLength Number of characters after which a string is cut (0 = no limit).
+     * @param bool $showMethods List the methods of the objects, with their signatures.
      *
      * @throws ReflectionException
      * @throws RuntimeException
@@ -49,6 +51,8 @@ class Dumper implements DumperInterface
         private ThemeInterface $theme = new ThemeHTML(),
         array $types = [],
         private readonly int $maxDepth = self::DEFAULT_MAX_DEPTH,
+        private readonly int $maxStringLength = 0,
+        private readonly bool $showMethods = false,
     ) {
         $this->types = $types;
 
@@ -121,6 +125,16 @@ class Dumper implements DumperInterface
     public function getTheme(): ThemeInterface
     {
         return $this->theme;
+    }
+
+    public function getMaxStringLength(): int
+    {
+        return max(0, $this->maxStringLength);
+    }
+
+    public function showsMethods(): bool
+    {
+        return $this->showMethods;
     }
 
     public function getIndent(): string

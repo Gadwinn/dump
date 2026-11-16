@@ -47,11 +47,16 @@ A helper is only defined when no function of that name exists yet, so you can de
 ## What is displayed
 
 - **Scalars** with their type; strings with their length in characters, and in bytes when it differs (`string(3 - size=5) 'été'`).
-- **Arrays** and **objects**, nested, with the visibility of each property (`public`, `protected`, `private`, `static`). Uninitialized typed properties are skipped.
+- **Arrays** and **objects**, nested, with the constants of the class and the visibility of each property (`public`, `protected`, `private`, `static`). Uninitialized typed properties are skipped.
+- **Methods** of the objects with their full signatures, on request (`showMethods`).
 - **Exceptions** with code, message, file, line, trace and previous exception.
 - **Resources**, open or closed.
 - **JSON strings** (`json`), **JSON with escaped quotes** (`json slashed`) and **`serialize()` output** (`serialized`) are decoded and shown as structures.
 - `*RECURSION*` when an object contains itself, `*MAX DEPTH*` beyond the nesting limit (10 levels by default).
+
+### Folding
+
+With the HTML theme, every non-empty array, object or exception has a small arrow: click it to fold or unfold its content. The list of methods starts folded. It relies on a few lines of JavaScript added once per page; without JavaScript everything simply stays visible.
 
 ### Safety
 
@@ -66,8 +71,13 @@ This is a development tool: a dump exposes internal data, do not leave calls in 
 use G\Dump\Theme\ThemeHTML;
 use G\Dump\Theme\ThemeText;
 
-// Custom themes and nesting limit for gdump(), egdump() and dgdump()
-gdumpOptions(themeHtml: new MyTheme(), maxDepth: 5);
+// Settings of gdump(), egdump() and dgdump()
+gdumpOptions(
+    themeHtml: new MyTheme(),
+    maxDepth: 5,            // nesting limit (default 10)
+    maxStringLength: 500,   // longer strings are cut and end with [...] (default 0 = no limit)
+    showMethods: true,      // list the methods of the objects (default false)
+);
 ```
 
 `gdumpOptions()` returns the shared `Dumper`; an argument left to `null` keeps the current setting.
@@ -78,7 +88,7 @@ gdumpOptions(themeHtml: new MyTheme(), maxDepth: 5);
 use G\Dump\Dumper;
 use G\Dump\Theme\ThemeText;
 
-$dumper = new Dumper(new ThemeText(), maxDepth: 5);
+$dumper = new Dumper(new ThemeText(), maxDepth: 5, maxStringLength: 500, showMethods: true);
 
 $text = $dumper->dump($value);
 
@@ -94,6 +104,7 @@ Implement `G\Dump\Theme\ThemeInterface`:
 |---|---|
 | `header(): string` / `footer(): string` | Opening and closing of a dump |
 | `output(string $type, ?string $complement = null, ?string $value = null): string` | One element: type, complement (length, class name…) and value |
+| `nest(string $head, array $children, bool $collapsed = false): string` | Joins an element with the lines of its children; the place to add folding |
 | `indent(int $depth): string` | Prefix of a nested line |
 | `escape(string $text): string` | Makes a raw value safe to print (HTML escaping, or nothing for plain text) |
 

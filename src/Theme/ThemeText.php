@@ -55,6 +55,11 @@ class ThemeText implements ThemeInterface
         return '';
     }
 
+    public function nest(string $head, array $children, bool $collapsed = false): string
+    {
+        return implode("\n", [$head, ...$children]);
+    }
+
     public function indent(int $depth): string
     {
         return $depth < 1 ? '' : str_repeat('|  ', $depth - 1) . '|- ';
