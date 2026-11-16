@@ -24,11 +24,11 @@ class WithMembers
     /**
      * @param array<string, mixed> $options
      */
-    final protected static function make(array &$options = []): self
+    final protected static function make(array &$options = []): int
     {
         $options = [];
 
-        return new self();
+        return 0;
     }
 
     private function secret(bool $flag = true, string $mode = 'fast'): void
